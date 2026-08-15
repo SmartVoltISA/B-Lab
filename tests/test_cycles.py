@@ -1,6 +1,6 @@
 import pytest
 
-from lab.cycles import detect_period, repeated_states, transitions, validate_binary
+from LAB.cycles import detect_period, repeated_states, transitions, validate_binary
 
 
 def test_detects_alternating_cycle():
