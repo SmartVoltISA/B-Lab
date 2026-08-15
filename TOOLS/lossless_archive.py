@@ -65,7 +65,10 @@ def decompress(archive: bytes) -> bytes:
     payload = archive[_HEADER.size:]
     if len(payload) != payload_size:
         raise ValueError("payload length mismatch")
-    data = _decode(codec, payload)
+    try:
+        data = _decode(codec, payload)
+    except Exception as exc:
+        raise ValueError("archive payload is corrupt") from exc
     if len(data) != original_size or hashlib.sha256(data).digest() != digest:
         raise ValueError("archive integrity check failed")
     return data
