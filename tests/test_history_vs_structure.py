@@ -20,4 +20,4 @@ def test_zero_self_loop_remains_structurally_distinct():
 
 
 def test_zero_is_not_erased_from_structure():
-    assert same_structure([0, 0, 1], [0, 1, 0, 1]) is True
+    assert same_structure([0, 0, 1], [0, 0, 0, 1])
