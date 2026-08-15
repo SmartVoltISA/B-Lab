@@ -1,4 +1,4 @@
-from LAB.temporal_memory import temporal_record, temporal_signature
+from LAB.temporal_memory import reconstruct_sequence, temporal_record, temporal_signature
 
 
 def test_temporal_record_keeps_observation_index():
@@ -19,3 +19,18 @@ def test_temporal_layer_does_not_add_a_third_state():
 
 def test_zero_transitions_remain_explicit():
     assert temporal_record([0, 0, 1]) == [(0, 0, 0), (1, 0, 1)]
+
+
+def test_temporal_record_round_trips_history():
+    for sequence in ([0, 1, 0], [1, 0, 1, 1], [0, 0, 1, 0, 1]):
+        assert reconstruct_sequence(temporal_record(sequence)) == list(sequence)
+
+
+def test_discontinuous_record_is_rejected():
+    record = [(0, 0, 1), (1, 0, 1)]
+    try:
+        reconstruct_sequence(record)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("discontinuous temporal record must be rejected")
