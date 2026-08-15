@@ -18,5 +18,7 @@ jobs:
         run: python -m pip install --upgrade pip pytest
       - name: Run tests
         run: PYTHONPATH=. python -m pytest -q
-      - name: Run compression benchmark
+      - name: Run structural compression benchmark
         run: PYTHONPATH=. python BENCHMARK/compression_benchmark.py
+      - name: Run adaptive lossless archive benchmark
+        run: PYTHONPATH=. python BENCHMARK/lossless_archive_benchmark.py
