@@ -2,6 +2,9 @@
 
 Nodes and edges are canonical data. Views are never treated as the source of truth.
 A corrupted record fails closed; it is never presented as a valid graph.
+
+Important: node identifiers may be canonicalized for deterministic storage, but
+edge ORDER is semantic history and therefore must be preserved exactly.
 """
 
 from __future__ import annotations
@@ -15,9 +18,12 @@ MAGIC = b"BLG1"
 
 
 def _canonical(nodes: dict[str, dict], edges: list[tuple[str, str, str]]) -> bytes:
+    # Node map order is canonicalized because node order is not semantic here.
+    # Edge order is deliberately NOT sorted: it is part of the historical
+    # structure and must survive pack -> unpack exactly.
     obj = {
         "nodes": [[k, nodes[k]] for k in sorted(nodes)],
-        "edges": [list(e) for e in sorted(edges)],
+        "edges": [list(e) for e in edges],
     }
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
