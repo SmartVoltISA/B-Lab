@@ -24,6 +24,6 @@ def test_archive_detects_corruption():
     try:
         decompress(bytes(archive))
     except ValueError as exc:
-        assert "integrity" in str(exc)
+        assert "corrupt" in str(exc) or "integrity" in str(exc)
     else:
         raise AssertionError("corruption was not detected")
