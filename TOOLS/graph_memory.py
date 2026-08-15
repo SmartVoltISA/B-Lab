@@ -48,15 +48,23 @@ def open_graph(blob: bytes) -> tuple[dict[str, dict], list[tuple[str, str, str]]
     if len(blob) < 41 or blob[:4] != MAGIC:
         raise ValueError("invalid graph record")
     flag = blob[4]
+    if flag not in (0, 1):
+        raise ValueError("graph integrity check failed: invalid compression flag")
     expected = blob[5:37]
     raw_len = int.from_bytes(blob[37:41], "big")
     payload = blob[41:]
-    raw = zlib.decompress(payload) if flag else payload
+    try:
+        raw = zlib.decompress(payload) if flag else payload
+    except zlib.error as exc:
+        raise ValueError("graph integrity check failed: corrupt compressed payload") from exc
     if len(raw) != raw_len or hashlib.sha256(raw).digest() != expected:
         raise ValueError("graph integrity check failed")
-    obj = json.loads(raw.decode("utf-8"))
-    nodes = {k: v for k, v in obj["nodes"]}
-    edges = [tuple(e) for e in obj["edges"]]
+    try:
+        obj = json.loads(raw.decode("utf-8"))
+        nodes = {k: v for k, v in obj["nodes"]}
+        edges = [tuple(e) for e in obj["edges"]]
+    except (UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        raise ValueError("graph integrity check failed: invalid canonical payload") from exc
     for src, dst, _kind in edges:
         if src not in nodes or dst not in nodes:
             raise ValueError("graph integrity check failed: dangling edge")
