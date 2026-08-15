@@ -12,6 +12,20 @@ def test_graph_round_trip_preserves_nodes_and_edges():
     assert edges2 == edges
 
 
+def test_graph_round_trip_preserves_exact_edge_order():
+    nodes = {"A": {}, "B": {}, "C": {}, "D": {}}
+    # Deliberately non-sorted order: this is historical sequence, not a set.
+    edges = [
+        ("C", "D", "step-3"),
+        ("A", "B", "step-1"),
+        ("B", "C", "step-2"),
+    ]
+    blob = seal(nodes, edges)
+    nodes2, edges2 = open_graph(blob)
+    assert nodes2 == nodes
+    assert edges2 == edges
+
+
 def test_dangling_edge_is_rejected():
     with pytest.raises(ValueError):
         seal({"A": {}}, [("A", "MISSING", "bad")])
