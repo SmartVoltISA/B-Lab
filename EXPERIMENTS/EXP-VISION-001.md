@@ -42,7 +42,7 @@ The ontology is deliberately structural. It is not a claim that every instance h
 
 ## External baseline checked
 
-Ultralytics YOLO currently supports detection, instance/semantic segmentation, pose/keypoints, depth, oriented boxes, classification and tracking. Its segmentation output provides object masks plus boxes/classes/confidence, making it a practical baseline for this organ. citeturn0search0turn0search1turn0search3
+Ultralytics YOLO is a useful technical baseline because its current framework covers detection, segmentation, pose/keypoints, depth, classification, oriented boxes and tracking. However, its current open-source licensing is AGPL-3.0; commercial use without those AGPL requirements requires its commercial/Enterprise licensing. Therefore we use it as a **benchmark/reference candidate**, not as an automatic dependency of our own product. 
 
 ## Benchmark plan
 
