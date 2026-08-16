@@ -43,9 +43,7 @@ The ontology is deliberately structural. It is not a claim that every instance h
 
 ## External baseline checked
 
-Current Ultralytics YOLO26 provides detection, instance/semantic segmentation, depth, classification, pose, oriented detection and tracking. citeturn0search0turn0search1turn0search13
-
-Its open-source package is AGPL-3.0, so it is treated here as an **external benchmark/reference backend**, not as the definition of our architecture. citeturn2search2
+Current Ultralytics YOLO26 provides detection, instance/semantic segmentation, depth, classification, pose, oriented detection and tracking. It is used only as an external benchmark/reference backend; B-Lab does not adopt its ontology or memory model.
 
 ## Implemented B-Lab adapter
 
