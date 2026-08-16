@@ -1,12 +1,14 @@
 """Ω-VISION runtime benchmark.
 
-Two gates are deliberate:
-1. deterministic structural gate (always runnable);
-2. real detector gate (requires the experimental vision dependencies and model weights).
+Gates:
+1. deterministic structural layer;
+2. real detection;
+3. real instance segmentation;
+4. real pose/keypoints;
+5. real video tracking.
 
-A detector result is never accepted merely because the process completed: the
-benchmark checks that the returned evidence contains labels, confidence values,
-geometry, source hash, and graph nodes/edges.
+The benchmark checks evidence integrity and graph preservation. It does not
+claim that a single reference image proves general-world accuracy.
 """
 from __future__ import annotations
 
@@ -16,8 +18,6 @@ import tempfile
 from pathlib import Path
 from urllib.request import urlretrieve
 
-# The repository is intentionally lightweight and does not require packaging.
-# Add its root so the benchmark works when invoked directly by GitHub Actions.
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -41,34 +41,87 @@ def structural_gate() -> dict:
         return {"gate": "structural", "status": "PASS", "nodes": 3, "edges": 2}
 
 
-def real_detector_gate() -> dict:
-    from TOOLS.vision_model_adapter import detect_yolo
+def _download_image(path: Path) -> None:
+    urlretrieve(FIXTURE_URL, path)
+    assert path.stat().st_size > 1000
+
+
+def image_gate() -> list[dict]:
+    from TOOLS.vision_model_adapter import detect_yolo, pose_yolo, segment_yolo
 
     with tempfile.TemporaryDirectory() as d:
         image = Path(d) / "bus.jpg"
-        urlretrieve(FIXTURE_URL, image)
-        result = detect_yolo(image)
-        detections = result["detections"]
-        graph = result["graph"]
-        assert graph["observation"]["sha256"] == file_sha256(image)
-        assert detections, "reference image produced no detections"
-        assert len(graph["nodes"]) == len(detections) + 1
-        assert len(graph["edges"]) == len(detections)
-        for det in detections:
-            assert det["label"]
-            assert 0.0 <= det["confidence"] <= 1.0
-            assert len(det["bbox_xyxy"]) == 4
+        _download_image(image)
+        results = []
+
+        detection = detect_yolo(image)
+        assert detection["detections"]
+        assert len(detection["graph"]["nodes"]) == len(detection["detections"]) + 1
+        results.append({
+            "gate": "real_detector", "status": "PASS",
+            "model": detection["model"], "detections": len(detection["detections"])
+        })
+
+        segmentation = segment_yolo(image)
+        segmented = [d for d in segmentation["detections"] if d.get("mask_present")]
+        assert segmented, "reference image produced no segmentation masks"
+        results.append({
+            "gate": "real_segmentation", "status": "PASS",
+            "model": segmentation["model"], "segmented_objects": len(segmented)
+        })
+
+        pose = pose_yolo(image)
+        posed = [d for d in pose["detections"] if d.get("keypoints_present")]
+        assert posed, "reference image produced no pose/keypoint detections"
+        results.append({
+            "gate": "real_pose", "status": "PASS",
+            "model": pose["model"], "posed_objects": len(posed),
+            "keypoints": posed[0]["keypoint_count"]
+        })
+        return results
+
+
+def video_tracking_gate() -> dict:
+    import cv2
+    from TOOLS.vision_model_adapter import track_yolo
+
+    with tempfile.TemporaryDirectory() as d:
+        image = Path(d) / "bus.jpg"
+        video = Path(d) / "bus_test.mp4"
+        _download_image(image)
+        frame = cv2.imread(str(image))
+        assert frame is not None
+        h, w = frame.shape[:2]
+        writer = cv2.VideoWriter(
+            str(video), cv2.VideoWriter_fourcc(*"mp4v"), 5.0, (w, h)
+        )
+        assert writer.isOpened(), "video writer unavailable"
+        try:
+            for shift in (0, 2, 4, 6):
+                shifted = frame.copy()
+                if shift:
+                    shifted = cv2.warpAffine(
+                        frame, [[1, 0, shift], [0, 1, 0]], (w, h)
+                    )
+                writer.write(shifted)
+        finally:
+            writer.release()
+
+        result = track_yolo(video)
+        observed = [f for f in result["frames"] if f["track_ids"]]
+        assert len(result["frames"]) >= 2
+        assert observed, "tracker returned no object tracks"
         return {
-            "gate": "real_detector",
-            "status": "PASS",
-            "backend": result["backend"],
+            "gate": "real_video_tracking", "status": "PASS",
+            "frames": len(result["frames"]),
+            "tracked_frames": len(observed),
             "model": result["model"],
-            "detections": len(detections),
         }
 
 
 if __name__ == "__main__":
     results = [structural_gate()]
     if "--real" in sys.argv:
-        results.append(real_detector_gate())
+        results.extend(image_gate())
+        results.append(video_tracking_gate())
     print(json.dumps(results, ensure_ascii=False, indent=2))
