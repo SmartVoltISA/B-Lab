@@ -36,3 +36,5 @@ jobs:
         run: PYTHONPATH=. python BENCHMARK/audio_benchmark.py
       - name: Run STT scoring benchmark
         run: PYTHONPATH=. python BENCHMARK/stt_benchmark.py
+      - name: Run graph integrity and cycle benchmark
+        run: PYTHONPATH=. python BENCHMARK/graph_integrity_benchmark.py
