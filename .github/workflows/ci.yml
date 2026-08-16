@@ -34,3 +34,5 @@ jobs:
         run: PYTHONPATH=. python BENCHMARK/recovery_organ_benchmark.py
       - name: Run Audio benchmark
         run: PYTHONPATH=. python BENCHMARK/audio_benchmark.py
+      - name: Run STT scoring benchmark
+        run: PYTHONPATH=. python BENCHMARK/stt_benchmark.py
