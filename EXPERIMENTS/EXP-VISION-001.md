@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Build the first vision organ that can accept JPEG/PNG images and video, preserve source identity, sample video frames, and represent detected objects as nodes and relations without pretending that an untested model understood the image.
+Build the first vision organ that can accept JPEG/PNG images and video, preserve source identity, sample video frames, and represent detected objects and relations without pretending that an untested model understood the image.
 
 ## Principle
 
 `source → observation → object → attributes → relations → memory`
 
-The source remains the root of the evidence graph. Every semantic claim must retain its confidence and provenance.
+The source remains the root of the evidence graph. Every semantic claim must retain confidence and provenance.
 
 ## Required layers
 
@@ -18,9 +18,10 @@ The source remains the root of the evidence graph. Every semantic claim must ret
 4. **Detection** — object class + confidence.
 5. **Segmentation** — optional object mask.
 6. **Pose/parts** — optional keypoints for people/animals/objects.
-7. **Relations** — contains, near, behind, on, holding, etc.; only when supported by evidence.
-8. **Identity/memory** — later layer; never infer a person's identity from appearance alone.
-9. **Trust** — confidence, provenance, model/version, and whether the claim was verified.
+7. **Tracking** — persistent object track IDs across video frames.
+8. **Relations** — contains, near, behind, on, holding, etc.; only when supported by evidence.
+9. **Identity/memory** — later layer; never infer a person's identity from appearance alone.
+10. **Trust** — confidence, provenance, model/version, and whether the claim was verified.
 
 ## Initial ontology
 
@@ -42,7 +43,37 @@ The ontology is deliberately structural. It is not a claim that every instance h
 
 ## External baseline checked
 
-Ultralytics YOLO is a useful technical baseline because its current framework covers detection, segmentation, pose/keypoints, depth, classification, oriented boxes and tracking. However, its current open-source licensing is AGPL-3.0; commercial use without those AGPL requirements requires its commercial/Enterprise licensing. Therefore we use it as a **benchmark/reference candidate**, not as an automatic dependency of our own product. 
+Current Ultralytics YOLO26 provides detection, instance/semantic segmentation, depth, classification, pose, oriented detection and tracking. citeturn0search0turn0search1turn0search13
+
+Its open-source package is AGPL-3.0, so it is treated here as an **external benchmark/reference backend**, not as the definition of our architecture. citeturn2search2
+
+## Implemented B-Lab adapter
+
+`TOOLS/vision_model_adapter.py` converts model output into our own evidence format:
+
+- detection → object node + confidence + bounding box;
+- segmentation → object node + mask presence/geometry metadata;
+- pose → object node + keypoint count;
+- tracking → frame sequence + persistent track IDs.
+
+The external model therefore supplies observations; B-Lab retains control of the ontology, graph, provenance and later memory layers.
+
+## Real runtime smoke benchmark
+
+Reference fixture: public Ultralytics `bus.jpg`.
+
+CI run `31936344248` passed both structural and real runtime gates.
+
+Results:
+
+- **Detection:** PASS — 5 detections.
+- **Instance segmentation:** PASS — 5 segmented objects.
+- **Pose:** PASS — 4 posed objects, 17 keypoints.
+- **Video tracking:** PASS — 4 frames, tracks observed on all 4.
+- **Graph preservation:** PASS.
+- **Source hashing:** PASS.
+
+These are **smoke tests**, not accuracy claims. General accuracy still requires a controlled fixture set with ground truth, including occlusion, blur, lighting, clutter and multiple object classes.
 
 ## Benchmark plan
 
@@ -77,11 +108,14 @@ Ultralytics YOLO is a useful technical baseline because its current framework co
 
 ## Status
 
-🟡 Architecture implemented.
-🟡 Structural intake implemented.
-🟡 Video sampling implemented.
-⚪ Real detector/segmenter benchmark pending.
-⚪ Phone camera integration pending.
-⚪ Learned semantic associations pending.
+🟢 Architecture + real runtime smoke path verified.
+🟢 Detection verified.
+🟢 Segmentation verified.
+🟢 Pose/keypoints verified.
+🟢 Video tracking verified.
+🟡 Controlled accuracy benchmark pending.
+🟡 Phone camera integration pending.
+🟡 Learned semantic associations pending.
+🟡 Memory/association loop pending.
 
-Do not mark the organ green until real image/video fixtures have passed the benchmark.
+Do not mark the organ fully complete until controlled fixtures and phone-camera input have passed.
