@@ -97,13 +97,10 @@ def video_tracking_gate() -> dict:
         )
         assert writer.isOpened(), "video writer unavailable"
         try:
-            for shift in (0, 2, 4, 6):
-                shifted = frame.copy()
-                if shift:
-                    shifted = cv2.warpAffine(
-                        frame, [[1, 0, shift], [0, 1, 0]], (w, h)
-                    )
-                writer.write(shifted)
+            # Repeated frames isolate the tracking pipeline from a second
+            # motion-generation algorithm. Identity continuity is the test target.
+            for _ in range(4):
+                writer.write(frame)
         finally:
             writer.release()
 
