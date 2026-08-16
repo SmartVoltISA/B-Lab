@@ -1,4 +1,9 @@
-from TOOLS.recovery_engine import build_report, reconstruct, scan_fragments
+from TOOLS.recovery_engine import (
+    build_report,
+    reconstruct,
+    reconstruct_exact,
+    scan_fragments,
+)
 
 
 def test_exact_fragment_recovery_and_provenance():
@@ -33,3 +38,25 @@ def test_source_modification_after_scan_invalidates_provenance():
         assert "provenance" in str(exc)
     else:
         raise AssertionError("changed source must not accept stale recovery evidence")
+
+
+def test_exact_reconstruction_requires_complete_evidence():
+    source = b"0123456789"
+    partial = scan_fragments(source, b"012")
+    report = build_report(source, partial)
+    try:
+        reconstruct_exact(report)
+    except ValueError as exc:
+        assert "100% exact coverage" in str(exc)
+    else:
+        raise AssertionError("partial evidence must not be promoted to exact recovery")
+
+
+def test_exact_reconstruction_roundtrip_with_complete_evidence():
+    source = b"0123456789"
+    fragment = scan_fragments(source, source)
+    report = build_report(source, fragment)
+    rebuilt = reconstruct_exact(report)
+    assert report.exact_bytes == len(source)
+    assert report.exact_ratio == 1.0
+    assert rebuilt == source
