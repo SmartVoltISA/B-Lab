@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B-Lab Voice Test</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;background:#111;color:#eee}button,select{font-size:18px;padding:12px;margin:5px;border-radius:10px}button{cursor:pointer}.ok{color:#7CFC9A}.bad{color:#ff7777}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{border:1px solid #555;padding:8px;text-align:left}textarea{width:100%;min-height:80px;font-size:17px}#status{padding:12px;border:1px solid #555;border-radius:10px;margin:12px 0}.small{opacity:.75;font-size:14px}
+</style>
+</head>
+<body>
+<h1>Ω-AUDIO — голосовой тест</h1>
+<p>Выбери язык, нажми «Проверить микрофон», затем для каждого теста нажми «Говорить» и произнеси фразу.</p>
+<select id="lang"><option value="ru-RU">Русский</option><option value="kk-KZ">Қазақша</option><option value="en-US">English</option><option value="de-DE">Deutsch</option><option value="fr-FR">Français</option><option value="es-ES">Español</option><option value="tr-TR">Türkçe</option><option value="uk-UA">Українська</option><option value="uz-UZ">O‘zbekcha</option><option value="auto">AUTO</option></select>
+<button id="mic">🎙️ Проверить микрофон</button>
+<div id="status">Статус: ожидание</div>
+<table><thead><tr><th>#</th><th>Эталон</th><th>Распознано</th><th>Совпадение</th></tr></thead><tbody id="tests"></tbody></table>
+<script>
+const tests=[
+  {id:1,text:'ноль ноль один'},
+  {id:2,text:'один два три'},
+  {id:3,text:'ноль ноль один и ноль ноль один'}
+];
+const tbody=document.querySelector('#tests');
+tests.forEach(t=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${t.id}</td><td>${t.text}</td><td id="r${t.id}">—</td><td id="m${t.id}">—</td>`;tbody.appendChild(tr)});
+const status=document.querySelector('#status');
+function norm(s){return s.toLowerCase().replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim()}
+function compare(a,b){return norm(a)===norm(b)}
+let recognition;
+function makeRecognition(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){status.innerHTML='<span class="bad">Web Speech API недоступен в этом браузере.</span>';return null}
+ const r=new SR(); r.continuous=false;r.interimResults=false;r.maxAlternatives=3;r.lang=document.querySelector('#lang').value==='auto'?'ru-RU':document.querySelector('#lang').value;return r;
+}
+document.querySelector('#mic').onclick=async()=>{
+ try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(x=>x.stop());status.innerHTML='<span class="ok">🟢 Микрофон доступен.</span>'}
+ catch(e){status.innerHTML='<span class="bad">🔴 Нет доступа к микрофону: '+e.message+'</span>'}
+};
+for(const t of tests){const b=document.createElement('button');b.textContent='🎙️ Тест '+t.id;b.onclick=()=>{
+ recognition=makeRecognition();if(!recognition)return;
+ status.textContent='Слушаю тест '+t.id+'…';
+ recognition.onresult=e=>{const text=Array.from(e.results).map(x=>x[0].transcript).join(' ');document.querySelector('#r'+t.id).textContent=text;const ok=compare(text,t.text);document.querySelector('#m'+t.id).innerHTML=ok?'<span class="ok">🟢 ДА</span>':'<span class="bad">🔴 НЕТ</span>';status.textContent='Тест '+t.id+' завершён';};
+ recognition.onerror=e=>status.innerHTML='<span class="bad">Ошибка STT: '+e.error+'</span>';
+ recognition.onend=()=>{};recognition.start();
+};document.body.insertBefore(b,document.querySelector('table'))}
+</script>
+<p class="small">Локальный браузерный тест. Для реального B-Lab STT результат должен дополнительно проходить серверный/локальный benchmark с WER/CER и SHA-256 исходного аудио.</p>
+</body></html>
