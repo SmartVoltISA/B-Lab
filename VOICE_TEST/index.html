@@ -3,54 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ω-AUDIO — Голосовой тест</title>
+<title>Ω-AUDIO — мини-тест</title>
 <style>
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#101114;color:#f5f5f5;padding:18px 14px 150px}main{max-width:720px;margin:auto}h1{font-size:28px;margin:8px 0}.hint{color:#b9bcc5;font-size:16px}.panel{background:#191b20;border:1px solid #30333b;border-radius:18px;padding:16px;margin:14px 0}.lang{width:100%;font-size:19px;padding:14px;border-radius:12px;background:#fff;color:#111}.mic{width:100%;min-height:120px;border:0;border-radius:24px;font-size:30px;font-weight:800;background:#2477ff;color:#fff;box-shadow:0 8px 30px #0008;margin:12px 0}.mic:active{transform:scale(.98)}.mic.listening{background:#b52a2a}.status{font-size:20px;font-weight:700;text-align:center;padding:14px;border-radius:14px;background:#20232a}.tests{display:grid;gap:10px}.test{background:#1b1d23;border-radius:14px;padding:13px}.expected{font-weight:700}.heard{color:#bfc3cc;margin-top:7px;min-height:25px}.mark{font-size:22px;margin-top:5px}.clear{width:100%;padding:12px;border-radius:12px;font-size:17px}.bottom{position:fixed;left:0;right:0;bottom:0;background:#17191e;border-top:2px solid #3a3e47;padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:10;box-shadow:0 -10px 30px #000b}.bottom strong{font-size:18px}.bottomText{margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}.ok{color:#5cff9a}.bad{color:#ff7272}.small{font-size:13px;color:#aeb2bc}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif}body{padding:16px 14px 150px}main{max-width:680px;margin:auto}h1{text-align:center;font-size:26px;margin:8px 0 16px}.box{background:#111;border:2px solid #2b2b2b;border-radius:18px;padding:14px;margin:12px 0}.label{font-size:15px;color:#aaa;margin-bottom:7px}.recognized{min-height:92px;font-size:26px;line-height:1.3;display:flex;align-items:center}.response{min-height:110px;font-size:22px;line-height:1.35}.mic{display:block;width:100%;height:150px;border:0;border-radius:28px;background:#1677ff;color:white;font-size:34px;font-weight:900;box-shadow:0 10px 35px #000;cursor:pointer}.mic.listening{background:#d52323;animation:pulse 1s infinite}.mic:disabled{opacity:.45}@keyframes pulse{50%{transform:scale(.985)}}select{width:100%;padding:14px;border-radius:12px;font-size:18px;background:#fff;color:#111}.status{text-align:center;color:#bbb;margin:12px 0;font-size:18px}.hint{text-align:center;color:#888;font-size:15px}.bottom{position:fixed;left:0;right:0;bottom:0;background:#111;border-top:2px solid #333;padding:12px 14px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -12px 30px #000;z-index:20}.bottomTitle{font-weight:800;font-size:18px}.bottomText{margin-top:4px;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ok{color:#4dff91}.bad{color:#ff5c5c}.clear{width:100%;padding:12px;border-radius:12px;background:#222;color:#fff;border:1px solid #444;font-size:17px}
 </style>
 </head>
 <body>
 <main>
-<h1>🎙️ Ω-AUDIO — голосовой тест</h1>
-<p class="hint">Нажми большую синюю кнопку. Когда появится «Слушаю…» — скажи фразу. Внизу сразу появится, что система услышала.</p>
-<div class="panel">
-<label for="lang"><b>Язык распознавания</b></label>
-<select id="lang" class="lang">
-<option value="ru-RU">🇷🇺 Русский</option><option value="kk-KZ">🇰🇿 Қазақша</option><option value="en-US">🇬🇧 English</option><option value="uk-UA">🇺🇦 Українська</option><option value="tr-TR">🇹🇷 Türkçe</option><option value="de-DE">🇩🇪 Deutsch</option><option value="auto">🌐 Авто</option>
+<h1>🎙️ Ω-AUDIO</h1>
+<div class="box">
+<div class="label">ЧТО СИСТЕМА УСЛЫШАЛА</div>
+<div id="recognized" class="recognized">—</div>
+</div>
+<div class="box">
+<div class="label">КАК СИСТЕМА ОТРАБОТАЛА</div>
+<div id="response" class="response">Нажми кнопку и скажи что-нибудь. Здесь появится результат обработки.</div>
+</div>
+<div class="box">
+<div class="label">ЯЗЫК</div>
+<select id="lang">
+<option value="ru-RU">🇷🇺 Русский</option>
+<option value="kk-KZ">🇰🇿 Қазақша</option>
+<option value="en-US">🇬🇧 English</option>
+<option value="uk-UA">🇺🇦 Українська</option>
+<option value="tr-TR">🇹🇷 Türkçe</option>
+<option value="de-DE">🇩🇪 Deutsch</option>
 </select>
-<button id="mic" class="mic">🎙️ НАЖМИ<br><span style="font-size:18px">и говори</span></button>
+</div>
+<button id="mic" class="mic">🎙️<br>НАЖМИ И ГОВОРИ</button>
 <div id="status" class="status">Готов. Жду нажатия.</div>
-</div>
-<div class="panel">
-<h2>Тест 1–3</h2>
-<div class="tests">
-<div class="test"><div class="expected">1. «ноль ноль один»</div><div id="r1" class="heard">Пока ничего</div><div id="m1" class="mark">⚪</div></div>
-<div class="test"><div class="expected">2. «один два три»</div><div id="r2" class="heard">Пока ничего</div><div id="m2" class="mark">⚪</div></div>
-<div class="test"><div class="expected">3. «ноль ноль один и ноль ноль один»</div><div id="r3" class="heard">Пока ничего</div><div id="m3" class="mark">⚪</div></div>
-</div>
-</div>
-<div class="panel">
-<h2>Свободная фраза</h2>
-<div id="free" style="font-size:20px;min-height:70px;padding:12px;background:#111318;border-radius:12px">Здесь появится распознанная речь.</div>
-<button id="clear" class="clear">Очистить результаты</button>
-<p class="small">Это браузерный контрольный тест. Позже сюда подключим наш локальный STT и сравним оба результата.</p>
-</div>
+<p class="hint">Сейчас это контрольный браузерный STT. Потом сюда подключим наш локальный STT.</p>
+<div class="box"><button id="clear" class="clear">Очистить</button></div>
 </main>
-<div class="bottom"><strong id="bottomTitle">Результат: —</strong><div id="bottomText" class="bottomText">Нажми кнопку сверху и скажи что-нибудь.</div></div>
+<div class="bottom"><div id="bottomTitle" class="bottomTitle">Результат: —</div><div id="bottomText" class="bottomText">Нажми большую кнопку сверху.</div></div>
 <script>
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-const status=document.querySelector('#status'),lang=document.querySelector('#lang'),free=document.querySelector('#free'),mic=document.querySelector('#mic'),bottomTitle=document.querySelector('#bottomTitle'),bottomText=document.querySelector('#bottomText');
-let rec;
-function norm(s){return s.toLowerCase().replace(/[.,!?;:]/g,'').replace(/ё/g,'е').replace(/\s+/g,' ').trim()}
-if(!SpeechRecognition){status.textContent='❌ Этот браузер не дал доступ к SpeechRecognition. Открой страницу в Chrome и разреши микрофон.';mic.disabled=true;mic.style.opacity='.45';}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const mic=document.getElementById('mic'),status=document.getElementById('status'),recognized=document.getElementById('recognized'),response=document.getElementById('response'),lang=document.getElementById('lang'),bottomTitle=document.getElementById('bottomTitle'),bottomText=document.getElementById('bottomText');
+let rec=null;
+function setBottom(title,text,cls=''){bottomTitle.textContent=title;bottomTitle.className='bottomTitle '+cls;bottomText.textContent=text;}
+if(!SR){status.textContent='❌ Браузер не поддерживает голосовой ввод. Открой в Chrome на Android и разреши микрофон.';response.textContent='SpeechRecognition недоступен.';mic.disabled=true;}
 else{
- rec=new SpeechRecognition();rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=3;
- rec.onstart=()=>{status.textContent='🎙️ Слушаю… ГОВОРИ СЕЙЧАС';mic.classList.add('listening');mic.innerHTML='🔴 СЛУШАЮ…<br><span style="font-size:18px">говори</span>';bottomTitle.textContent='Слушаю…';bottomText.textContent='Говори сейчас';};
- rec.onerror=e=>{status.textContent='❌ Ошибка: '+e.error;mic.classList.remove('listening');mic.innerHTML='🎙️ НАЖМИ<br><span style="font-size:18px">и говори</span>';bottomTitle.textContent='Ошибка';bottomText.textContent=e.error;};
- rec.onend=()=>{mic.classList.remove('listening');mic.innerHTML='🎙️ НАЖМИ<br><span style="font-size:18px">и говори</span>';if(status.textContent.startsWith('🎙️'))status.textContent='Готов. Можно говорить снова.';};
- rec.onresult=e=>{let text='';for(let i=e.resultIndex;i<e.results.length;i++)text+=e.results[i][0].transcript;free.textContent=text||'—';bottomTitle.textContent='Распознано';bottomText.textContent=text||'—';if(e.results[e.results.length-1].isFinal){const n=norm(text);const expected=[null,'ноль ноль один','один два три','ноль ноль один и ноль ноль один'];let matched=false;[1,2,3].forEach(i=>{const el=document.querySelector('#r'+i),mark=document.querySelector('#m'+i);if(el.textContent==='Пока ничего'){el.textContent=text;const ok=n===norm(expected[i]);mark.textContent=ok?'🟢 СОВПАЛО':'🔴 НЕ СОВПАЛО';mark.className='mark '+(ok?'ok':'bad');if(ok)matched=true;}});status.textContent='Готово: '+text;bottomTitle.textContent=matched?'🟢 Совпало с тестом':'🔴 Текст получен, но точного совпадения с первым свободным тестом нет';}}
+rec=new SR();rec.continuous=false;rec.interimResults=true;rec.maxAlternatives=3;
+rec.onstart=()=>{mic.classList.add('listening');mic.innerHTML='🔴<br>СЛУШАЮ…';status.textContent='🎙️ Слушаю. Говори сейчас.';setBottom('Слушаю…','Голосовой ввод активен');};
+rec.onresult=e=>{let text='';for(let i=e.resultIndex;i<e.results.length;i++)text+=e.results[i][0].transcript;recognized.textContent=text||'…';if(e.results[e.results.length-1].isFinal){response.innerHTML='🟢 Распознавание завершено.<br><span style="color:#aaa">Текст передан дальше без изменения.</span>';status.textContent='Готово.';setBottom('🟢 РАСПОЗНАНО',text,'ok');}};
+rec.onerror=e=>{mic.classList.remove('listening');mic.innerHTML='🎙️<br>НАЖМИ И ГОВОРИ';status.textContent='❌ '+e.error;response.textContent='Голосовой ввод завершился ошибкой: '+e.error;setBottom('🔴 ОШИБКА',e.error,'bad');};
+rec.onend=()=>{mic.classList.remove('listening');mic.innerHTML='🎙️<br>НАЖМИ И ГОВОРИ';if(status.textContent.startsWith('🎙️'))status.textContent='Готов. Жду следующую фразу.';};
 }
-mic.onclick=()=>{if(!rec)return;rec.lang=lang.value==='auto'?'ru-RU':lang.value;try{rec.start()}catch(e){status.textContent='Подождите: предыдущий тест ещё завершается.'}};
-document.querySelector('#clear').onclick=()=>{free.textContent='Здесь появится распознанная речь.';[1,2,3].forEach(i=>{document.querySelector('#r'+i).textContent='Пока ничего';document.querySelector('#m'+i).textContent='⚪';document.querySelector('#m'+i).className='mark'});status.textContent='Готов. Жду нажатия.';bottomTitle.textContent='Результат: —';bottomText.textContent='Нажми кнопку сверху и скажи что-нибудь.'};
+mic.onclick=()=>{if(!rec)return;rec.lang=lang.value;recognized.textContent='…';response.textContent='Слушаю и обрабатываю…';status.textContent='Запуск микрофона…';try{rec.start()}catch(e){status.textContent='Подожди окончания предыдущего теста.'}};
+document.getElementById('clear').onclick=()=>{recognized.textContent='—';response.textContent='Нажми кнопку и скажи что-нибудь. Здесь появится результат обработки.';status.textContent='Готов. Жду нажатия.';setBottom('Результат: —','Нажми большую кнопку сверху.');};
 </script>
 </body>
 </html>
