@@ -1,5 +1,6 @@
 # Experimental vision backend for Ω-VISION-001
 # Reference model checked against current Ultralytics release available on PyPI.
 ultralytics==8.4.104
+lap>=0.5.12
 Pillow>=10,<12
 opencv-python-headless>=4.10,<5
