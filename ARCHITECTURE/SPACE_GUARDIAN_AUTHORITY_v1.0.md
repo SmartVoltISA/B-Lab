@@ -117,7 +117,7 @@ Guardian must remain able to report a Space failure even when the affected Space
 
 Space must remain able to preserve already-valid state when Guardian is temporarily unavailable, except for operations that explicitly require Guardian authorization.
 
-This follows the established control-plane/data-plane principle that existing data-plane work should not unnecessarily depend on a functioning control plane. citeturn0search0turn0search1
+This follows the established control-plane/data-plane principle that existing data-plane work should not unnecessarily depend on a functioning control plane.
 
 ## Audit requirements
 
