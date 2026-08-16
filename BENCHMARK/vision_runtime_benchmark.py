@@ -16,6 +16,12 @@ import tempfile
 from pathlib import Path
 from urllib.request import urlretrieve
 
+# The repository is intentionally lightweight and does not require packaging.
+# Add its root so the benchmark works when invoked directly by GitHub Actions.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from TOOLS.vision_engine import VisionObservation, file_sha256, make_graph
 
 FIXTURE_URL = "https://github.com/ultralytics/assets/releases/download/v0.0.0/bus.jpg"
