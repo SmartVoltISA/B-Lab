@@ -24,6 +24,8 @@ jobs:
         run: PYTHONPATH=. python BENCHMARK/lossless_archive_benchmark.py
       - name: Run evidence-first recovery benchmark
         run: PYTHONPATH=. python BENCHMARK/recovery_benchmark.py
+      - name: Run exact recovery benchmark
+        run: PYTHONPATH=. python BENCHMARK/recovery_exact_benchmark.py
       - name: Run recovery damage sweep
         run: PYTHONPATH=. python BENCHMARK/recovery_damage_sweep.py
       - name: Run structural recovery benchmark
