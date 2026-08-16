@@ -1,4 +1,4 @@
-"""B-Lab Recovery Engine v0.1 — read-only, evidence-first recovery primitives.
+"""B-Lab Recovery Engine v0.2 — read-only, evidence-first recovery primitives.
 
 This tool never modifies a source image/file. It extracts intact fragments and
 builds a provenance graph. It deliberately separates exact recovery from
@@ -9,7 +9,7 @@ No claim is made that deleted or physically destroyed data can be reconstructed.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -71,10 +71,11 @@ def build_report(source: bytes, fragments: list[Fragment]) -> RecoveryReport:
     accepted: list[Fragment] = []
     covered = 0
     exact = 0
+    source_digest = sha256(source)
     for f in ordered:
         if f.offset < 0 or f.end > len(source):
             raise ValueError("fragment outside source bounds")
-        if f.source_sha256 != sha256(source):
+        if f.source_sha256 != source_digest:
             raise ValueError("fragment provenance does not match source")
         if accepted and f.offset < accepted[-1].end:
             continue
@@ -84,7 +85,7 @@ def build_report(source: bytes, fragments: list[Fragment]) -> RecoveryReport:
             exact += len(f.data)
     inferred = max(0, covered - exact)
     return RecoveryReport(len(source), covered, exact, inferred,
-                          tuple(accepted), sha256(source))
+                          tuple(accepted), source_digest)
 
 
 def reconstruct(report: RecoveryReport) -> bytes:
@@ -97,3 +98,30 @@ def reconstruct(report: RecoveryReport) -> bytes:
     for f in report.fragments:
         out[f.offset:f.end] = f.data
     return bytes(out)
+
+
+def reconstruct_exact(report: RecoveryReport) -> bytes:
+    """Return a byte-exact reconstruction only when evidence covers the source.
+
+    This function is deliberately strict: any gap or non-exact fragment makes
+    the operation fail instead of filling unknown bytes or guessing them.
+    """
+    if report.inferred_bytes != 0 or report.exact_bytes != report.source_size:
+        raise ValueError("exact reconstruction requires 100% exact coverage")
+    if not report.fragments and report.source_size:
+        raise ValueError("exact reconstruction requires evidence fragments")
+
+    cursor = 0
+    out = bytearray(report.source_size)
+    for fragment in report.fragments:
+        if fragment.offset != cursor or fragment.confidence < 1.0:
+            raise ValueError("exact reconstruction requires contiguous exact fragments")
+        out[fragment.offset:fragment.end] = fragment.data
+        cursor = fragment.end
+
+    if cursor != report.source_size:
+        raise ValueError("exact reconstruction does not cover complete source")
+    rebuilt = bytes(out)
+    if sha256(rebuilt) != report.sha256:
+        raise ValueError("exact reconstruction checksum mismatch")
+    return rebuilt
