@@ -1,29 +1,30 @@
-# EXP-AUDIO-002 — STT accuracy and provider boundary
+# EXP-AUDIO-002 — Real STT evaluation
 
 ## Goal
+Measure actual speech-to-text quality instead of testing only the adapter contract.
 
-Move Ω-AUDIO from an audio-only foundation toward measurable speech-to-text without coupling the laboratory core to one provider.
+## Primary metrics
+- WER (word error rate)
+- exact-match rate
+- latency / real-time factor
+- RAM / VRAM
+- failure rate
 
-## Implemented
+## Corpus
+Russian speech with fixed audio SHA-256 and fixed human reference transcript.
 
-- optional local Faster-Whisper adapter;
-- explicit transcript object with provider/model/language metadata;
-- deterministic Word Error Rate (WER) metric;
-- CI scoring benchmark without downloading a model;
-- no-transcript/no-provider rule remains unchanged.
+## Conditions
+1. clean speech;
+2. background noise;
+3. fast speech;
+4. slow speech;
+5. multiple speakers / overlap.
 
-## External baseline considered
+## Candidate
+First local candidate: faster-whisper. Its upstream project publishes WER and speed/memory benchmarks, but those numbers are not transferred to B-Lab; B-Lab must measure its own corpus and hardware.
 
-Faster-Whisper is a CTranslate2 reimplementation of Whisper and reports lower memory use and faster inference than the reference implementation under its published benchmark conditions. This is a candidate provider, not a claim that it is universally best.
-
-## Scientific rule
-
-Real STT accuracy is **not** claimed by the CI scoring benchmark. It requires a fixed audio corpus with human reference transcripts.
-
-## Next experiment
-
-Build a small fixed Russian-language corpus with clean speech, background noise, different speaking rates, and multiple speakers. Measure WER/CER, latency, CPU/RAM usage, and failure cases on the same model/settings.
+## Rule
+No transcript is accepted as evidence unless it comes from an actual configured STT provider. Missing provider = `null`, never an invented transcript.
 
 ## Status
-
-🟡 STT adapter implemented; real corpus benchmark pending.
+Protocol registered. Real Russian corpus execution remains a hardware/model experiment and is not claimed by CI until actually run.
